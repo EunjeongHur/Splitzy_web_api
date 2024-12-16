@@ -78,4 +78,14 @@ router.post("/login", async (req, res) => {
 	}
 });
 
+router.get("/logout", (req, res) => {
+	req.session.destroy((err) => {
+		if (err) {
+			return res.status(500).send("Internal Server Error");
+		}
+		res.clearCookie("connect.sid");
+		return res.status(200).send("Logged out");
+	});
+});
+
 module.exports = router;
