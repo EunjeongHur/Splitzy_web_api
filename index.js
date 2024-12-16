@@ -14,11 +14,11 @@ const mongodb_session_secret = process.env.MONGODB_SESSION_SECRET;
 const node_session_secret = process.env.NODE_SESSION_SECRET;
 
 const databaseTablesModule = require("./database/create_tables");
-const groupsModule = require("./database/groups");
 
 const authRouter = require("./routes/auth");
 const groupRouter = require("./routes/group");
 const friendsRouter = require("./routes/friends");
+const expensesRouter = require("./routes/expenses");
 
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
@@ -56,6 +56,7 @@ app.get("/deleteTable", (req, res) => {
 app.use("/auth", authRouter);
 app.use("/groups", groupRouter);
 app.use("/friends", friendsRouter);
+app.use("/expenses", expensesRouter);
 
 const db_test = require("./database/users");
 app.get("/testing", async (req, res) => {

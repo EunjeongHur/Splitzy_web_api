@@ -77,7 +77,69 @@ async function createGroup(postData) {
     }
 }
 
+async function getGroupMembers(postData) {
+    let getGroupMembersQuery = `
+		SELECT user_id FROM group_members WHERE group_id = :group_id
+	`;
+
+    let params = {
+        group_id: postData.group_id,
+    };
+
+    try {
+        const results = await database.query(getGroupMembersQuery, params);
+        return results[0];
+    } catch (error) {
+        console.log(error);
+        return [];
+    }
+}
+
+async function getGroupDetails({ groupId }) {
+    try {
+        // Fetch group basic details
+        const groupQuery = `
+            SELECT id, name, total, created_at
+            FROM user_groups
+            WHERE id = ?;
+        `;
+        const [groupResult] = await database.query(groupQuery, [groupId]);
+        if (groupResult.length === 0) {
+            return null; // Group not found
+        }
+        const group = groupResult[0];
+
+        // Fetch group expenses
+        const expenseQuery = `
+            SELECT 
+                e.id AS expense_id,
+                e.description,
+                e.amount,
+                e.paid_by,
+                u.name AS paid_by_name,
+                e.created_at
+            FROM expenses e
+            INNER JOIN users u ON e.paid_by = u.id
+            WHERE e.group_id = ?;
+        `;
+        const [expensesResult] = await database.query(expenseQuery, [groupId]);
+
+        return {
+            id: group.id,
+            name: group.name,
+            total: group.total,
+            created_at: group.created_at,
+            expenses: expensesResult,
+        };
+    } catch (error) {
+        console.error("Error fetching group details:", error);
+        throw error;
+    }
+}
+
 module.exports = {
     getUserGroup,
     createGroup,
+    getGroupMembers,
+    getGroupDetails,
 };
