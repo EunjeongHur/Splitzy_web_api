@@ -62,6 +62,7 @@ async function createGroup(postData) {
             groupId,
             userId,
         ]);
+
         await connection.query(createGroupMembersQuery, [memberValues]);
 
         await connection.commit();
@@ -137,9 +138,37 @@ async function getGroupDetails({ groupId }) {
     }
 }
 
+async function updateGroupTotal(postData) {
+    const connection = await database.getConnection();
+    try {
+        await connection.beginTransaction();
+
+        const updateTotalQuery = `
+            UPDATE user_groups
+            SET total = total + ?
+            WHERE id = ?
+        `;
+
+        const updateParams = [postData.amount, postData.group_id];
+        await connection.query(updateTotalQuery, updateParams);
+
+        await connection.commit();
+        console.log("Group total updated successfully");
+
+        return { success: true };
+    } catch (error) {
+        await connection.rollback();
+        console.log(error);
+        return { success: false, error: error.message };
+    } finally {
+        connection.release();
+    }
+}
+
 module.exports = {
     getUserGroup,
     createGroup,
     getGroupMembers,
     getGroupDetails,
+    updateGroupTotal,
 };

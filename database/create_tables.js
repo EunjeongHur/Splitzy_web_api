@@ -24,6 +24,7 @@ async function createTables() {
             id INT AUTO_INCREMENT PRIMARY KEY,
             group_id INT NOT NULL,
             user_id INT NOT NULL,
+            amount_owed DECIMAL(10, 2) DEFAULT 0.00,
             FOREIGN KEY (group_id) REFERENCES user_groups(id) ON DELETE CASCADE,
             FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
         );

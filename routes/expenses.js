@@ -1,6 +1,5 @@
 const express = require("express");
 const router = express.Router();
-const db_user = require("../database/users");
 const db_group = require("../database/groups");
 const db_expenses = require("../database/expenses");
 const jwt = require("jsonwebtoken");
@@ -25,7 +24,6 @@ router.post("/", async (req, res) => {
         }
 
         const groupMembers = await db_group.getGroupMembers({ group_id });
-
         if (groupMembers.length === 0) {
             return res
                 .status(404)
@@ -48,6 +46,9 @@ router.post("/", async (req, res) => {
             paid_by: user_id,
             split_between: splitBetween,
         });
+
+        await db_group.updateGroupTotal({ group_id, amount });
+
         res.status(201).send({ success: true, expense_id: result.expense_id });
     } catch (error) {
         console.error("Error adding expense:", error);
