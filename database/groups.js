@@ -1,72 +1,83 @@
 const database = include("databaseConnection");
 
 async function getUserGroup(postData) {
-	let getUserGroupQuery = `
-		SELECT ug.id as group_id,
-			ug.name as group_name,
-			ug.total as group_total,
-			ug.created_at as group_created_at
+    let getUserGroupQuery = `
+		SELECT DISTINCT 
+			ug.id AS id,
+			ug.name AS name,
+			ug.total AS total
 		FROM group_members gm
 		INNER JOIN user_groups ug ON gm.group_id = ug.id
 		WHERE gm.user_id = :user_id
+
+		UNION
+
+		SELECT DISTINCT 
+			ug.id AS id,
+			ug.name AS name,
+			ug.total AS total
+		FROM group_members gm
+		INNER JOIN user_groups ug ON gm.group_id = ug.id
+		INNER JOIN friends f ON 
+			(f.user_one_id = :user_id AND f.user_two_id = gm.user_id)
+			OR (f.user_two_id = :user_id AND f.user_one_id = gm.user_id);
 	`;
 
-	let params = {
-		user_id: postData.user_id,
-	};
+    let params = {
+        user_id: postData.user_id,
+    };
 
-	try {
-		const results = await database.query(getUserGroupQuery, params);
-		return results[0];
-	} catch (error) {
-		console.log(error);
-		return [];
-	}
+    try {
+        const results = await database.query(getUserGroupQuery, params);
+        return results[0];
+    } catch (error) {
+        console.log(error);
+        return [];
+    }
 }
 
 async function createGroup(postData) {
-	const connection = await database.getConnection();
-	try {
-		await connection.beginTransaction();
+    const connection = await database.getConnection();
+    try {
+        await connection.beginTransaction();
 
-		let createGroupQuery = `
-			INSERT INTO user_groups (name, total, created_at)
-			VALUES (:groupName, 0.00, NOW())
-		`;
+        const createGroupQuery = `
+            INSERT INTO user_groups (name, total, created_at)
+            VALUES (?, 0.00, NOW())
+        `;
 
-		let params = {
-			groupName: postData.groupName,
-			memberIds: postData.memberIds,
-		};
+        const groupParams = [postData.groupName];
+        const [groupResult] = await connection.query(
+            createGroupQuery,
+            groupParams
+        );
+        const groupId = groupResult.insertId;
 
-		const [groupResult] = await connection.query(createGroupQuery, params);
-		const groupId = groupResult.insertId;
+        const createGroupMembersQuery = `
+            INSERT INTO group_members (group_id, user_id)
+            VALUES ?
+        `;
 
-		const createGroupMembersQuery = `
-			INSERT INTO group_members (group_id, user_id)
-			VALUES (:groupId, :userId)
-		`;
+        const memberValues = postData.memberIds.map((userId) => [
+            groupId,
+            userId,
+        ]);
+        await connection.query(createGroupMembersQuery, [memberValues]);
 
-		const memberValues = postData.memberIds.map((user_id) => [
-			groupId,
-			user_id,
-		]);
-		await connection.query(createGroupMembersQuery, [memberValues]);
+        await connection.commit();
+        console.log("Group created successfully with ID:", groupId);
 
-		await connection.commit();
-		console.log("Group created successfully with ID:", groupId);
-
-		return { success: true, groupId };
-	} catch (error) {
-		await connection.rollback();
-		console.log(error);
-		return { success: false, error: error.message };
-	} finally {
-		connection.release();
-	}
+        return { success: true, groupId };
+    } catch (error) {
+        await connection.rollback();
+        console.log(error);
+        return { success: false, error: error.message };
+    } finally {
+        connection.release();
+    }
 }
 
 module.exports = {
-	getUserGroup,
-	createGroup,
+    getUserGroup,
+    createGroup,
 };

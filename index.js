@@ -18,55 +18,57 @@ const groupsModule = require("./database/groups");
 
 const authRouter = require("./routes/auth");
 const groupRouter = require("./routes/group");
+const friendsRouter = require("./routes/friends");
 
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
 var mongoStore = MongoStore.create({
-	mongoUrl: `mongodb+srv://${mongodb_user}:${mongodb_password}@cluster0.pac1f.mongodb.net/`,
-	crypto: {
-		secret: mongodb_session_secret,
-	},
+    mongoUrl: `mongodb+srv://${mongodb_user}:${mongodb_password}@cluster0.pac1f.mongodb.net/`,
+    crypto: {
+        secret: mongodb_session_secret,
+    },
 });
 
 app.use(
-	session({
-		secret: node_session_secret,
-		store: mongoStore,
-		saveUninitialized: false,
-		resave: true,
-		cookie: {
-			secure: true,
-			sameSite: "none",
-		},
-	})
+    session({
+        secret: node_session_secret,
+        store: mongoStore,
+        saveUninitialized: false,
+        resave: true,
+        cookie: {
+            secure: true,
+            sameSite: "none",
+        },
+    })
 );
 
 app.get("/createTable", (req, res) => {
-	databaseTablesModule.createTables();
-	res.send("Tables created");
+    databaseTablesModule.createTables();
+    res.send("Tables created");
 });
 
 app.get("/deleteTable", (req, res) => {
-	databaseTablesModule.deleteTables();
-	res.send("Tables deleted");
+    databaseTablesModule.deleteTables();
+    res.send("Tables deleted");
 });
 
 app.use("/auth", authRouter);
 app.use("/groups", groupRouter);
+app.use("/friends", friendsRouter);
 
 const db_test = require("./database/users");
 app.get("/testing", async (req, res) => {
-	try {
-		const result = await db_test.testing();
-		console.log("result", result);
-		res.send(result);
-	} catch (error) {
-		console.log(error);
-		res.send([]);
-	}
+    try {
+        const result = await db_test.testing();
+        console.log("result", result);
+        res.send(result);
+    } catch (error) {
+        console.log(error);
+        res.send([]);
+    }
 });
 
 app.listen(port, () => {
-	console.log(`Server is running on http://localhost:${port}`);
+    console.log(`Server is running on http://localhost:${port}`);
 });
