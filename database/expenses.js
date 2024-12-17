@@ -48,4 +48,48 @@ async function addExpense({
     }
 }
 
-module.exports = { addExpense };
+async function getGroupBalances(groupId) {
+    let getGroupBalancesQuery = `
+        SELECT 
+            u.name AS user,
+            IFNULL(paid.total_paid, 0) - IFNULL(share.total_share, 0) AS balance
+        FROM users u
+        LEFT JOIN (
+            SELECT 
+                paid_by AS user_id, 
+                SUM(amount) AS total_paid
+            FROM expenses
+            WHERE group_id = ?
+            GROUP BY paid_by
+        ) AS paid ON paid.user_id = u.id
+        LEFT JOIN (
+            SELECT 
+                user_id, 
+                SUM(amount) AS total_share
+            FROM expense_shares
+            WHERE expense_id IN (SELECT id FROM expenses WHERE group_id = ?)
+            GROUP BY user_id
+        ) AS share ON share.user_id = u.id
+        WHERE u.id IN (SELECT user_id FROM group_members WHERE group_id = ?);
+
+    `;
+
+    try {
+        const [results] = await database.query(getGroupBalancesQuery, [
+            groupId,
+            groupId,
+            groupId,
+        ]);
+
+        const balances = {};
+        results.forEach((row) => {
+            balances[row.user] = row.balance;
+        });
+        return balances;
+    } catch (error) {
+        console.log(error);
+        return {};
+    }
+}
+
+module.exports = { addExpense, getGroupBalances };

@@ -2,24 +2,17 @@ const express = require("express");
 const router = express.Router();
 const db_group = require("../database/groups");
 const db_expenses = require("../database/expenses");
-const jwt = require("jsonwebtoken");
+const { verifyToken } = require("../utils");
 
 // Create a new expense
-router.post("/", async (req, res) => {
+router.post("/", verifyToken, async (req, res) => {
     try {
-        const authHeader = req.headers.authorization;
+        const user_id = req.userId;
 
-        if (!authHeader || !authHeader.startsWith("Bearer ")) {
-            return res.status(401).send("Unauthorized");
-        }
+        const { group_id, description, amount, selectedPaidBy } = req.body;
 
-        const token = authHeader.split(" ")[1];
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        const user_id = decoded.userId;
-
-        const { group_id, description, amount } = req.body;
-
-        if (!group_id || !description || !amount) {
+        console.log(group_id, description, amount, selectedPaidBy);
+        if (!group_id || !description || !amount || !selectedPaidBy) {
             return res.status(400).send({ error: "Invalid input data" });
         }
 
@@ -43,7 +36,7 @@ router.post("/", async (req, res) => {
             group_id,
             description,
             amount,
-            paid_by: user_id,
+            paid_by: selectedPaidBy,
             split_between: splitBetween,
         });
 

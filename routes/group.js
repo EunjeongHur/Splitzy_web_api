@@ -1,21 +1,14 @@
 const express = require("express");
 const router = express.Router();
 const db_group = require("../database/groups");
-const jwt = require("jsonwebtoken");
+const { verifyToken } = require("../utils");
 
 // Fetch a user's groups
-router.get("/", async (req, res) => {
+router.get("/", verifyToken, async (req, res) => {
     try {
-        const authHeader = req.headers.authorization;
+        const user_id = req.userId;
 
-        if (!authHeader || !authHeader.startsWith("Bearer ")) {
-            return res.status(401).send("Unauthorized");
-        }
-        const token = authHeader.split(" ")[1];
-
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        const user_id = decoded.userId;
-
+        console.log(user_id);
         const result = await db_group.getUserGroup({ user_id });
         console.log(result);
         res.status(200).send(result);
@@ -39,6 +32,7 @@ router.post("/", async (req, res) => {
     }
 });
 
+// Get group details for a specific group
 router.get("/:groupId", async (req, res) => {
     const { groupId } = req.params;
 
@@ -54,6 +48,19 @@ router.get("/:groupId", async (req, res) => {
     } catch (error) {
         console.error("Error fetching group details:", error);
         res.status(500).send({ error: "Internal Server Error" });
+    }
+});
+
+// Get group members list for a specific group
+router.get("/:groupId/members", async (req, res) => {
+    const groupId = req.params.groupId;
+
+    try {
+        const members = await db_group.getGroupMembersWithNames({ groupId });
+        res.status(200).send({ success: true, members });
+    } catch (error) {
+        console.error("Error fetching group members:", error);
+        res.status(500).send({ error: "Failed to fetch group members" });
     }
 });
 

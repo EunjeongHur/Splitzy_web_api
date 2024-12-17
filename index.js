@@ -19,6 +19,7 @@ const authRouter = require("./routes/auth");
 const groupRouter = require("./routes/group");
 const friendsRouter = require("./routes/friends");
 const expensesRouter = require("./routes/expenses");
+const settleUpRouter = require("./routes/settleUp");
 
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
@@ -57,18 +58,7 @@ app.use("/auth", authRouter);
 app.use("/groups", groupRouter);
 app.use("/friends", friendsRouter);
 app.use("/expenses", expensesRouter);
-
-const db_test = require("./database/users");
-app.get("/testing", async (req, res) => {
-    try {
-        const result = await db_test.testing();
-        console.log("result", result);
-        res.send(result);
-    } catch (error) {
-        console.log(error);
-        res.send([]);
-    }
-});
+app.use("/settle", settleUpRouter);
 
 app.listen(port, () => {
     console.log(`Server is running on http://localhost:${port}`);

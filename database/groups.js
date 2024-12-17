@@ -96,6 +96,27 @@ async function getGroupMembers(postData) {
     }
 }
 
+async function getGroupMembersWithNames(postData) {
+    let getGroupMembersQuery = `
+        SELECT u.id AS user_id, u.name AS user_name
+        FROM group_members gm
+        INNER JOIN users u ON gm.user_id = u.id
+        WHERE gm.group_id = :group_id
+    `;
+
+    let params = {
+        group_id: postData.groupId,
+    };
+
+    try {
+        const results = await database.query(getGroupMembersQuery, params);
+        return results[0];
+    } catch (error) {
+        console.log(error);
+        return [];
+    }
+}
+
 async function getGroupDetails({ groupId }) {
     try {
         // Fetch group basic details
@@ -121,7 +142,8 @@ async function getGroupDetails({ groupId }) {
                 e.created_at
             FROM expenses e
             INNER JOIN users u ON e.paid_by = u.id
-            WHERE e.group_id = ?;
+            WHERE e.group_id = ?
+            ORDER BY e.created_at DESC;
         `;
         const [expensesResult] = await database.query(expenseQuery, [groupId]);
 
@@ -171,4 +193,5 @@ module.exports = {
     getGroupMembers,
     getGroupDetails,
     updateGroupTotal,
+    getGroupMembersWithNames,
 };
