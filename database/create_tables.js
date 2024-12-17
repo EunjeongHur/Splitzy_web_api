@@ -62,6 +62,22 @@ async function createTables() {
             CONSTRAINT unique_friendship UNIQUE (user_one_id, user_two_id)
         );
     `,
+        `
+        CREATE TABLE IF NOT EXISTS settlements (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            group_id INT NOT NULL,
+            from_user_id INT NOT NULL,
+            to_user_id INT NOT NULL,
+            amount DECIMAL(10, 2) NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            is_settled BOOLEAN DEFAULT FALSE,
+            FOREIGN KEY (group_id) REFERENCES user_groups(id) ON DELETE CASCADE,
+            FOREIGN KEY (from_user_id) REFERENCES users(id) ON DELETE CASCADE,
+            FOREIGN KEY (to_user_id) REFERENCES users(id) ON DELETE CASCADE,
+            CONSTRAINT unique_settlement UNIQUE (group_id, from_user_id, to_user_id)
+        );
+
+    `,
     ];
 
     try {
@@ -79,6 +95,7 @@ async function createTables() {
 
 async function deleteTables() {
     const deleteTableQueries = [
+        "DROP TABLE IF EXISTS settlements;",
         "DROP TABLE IF EXISTS friends;",
         "DROP TABLE IF EXISTS expense_shares;",
         "DROP TABLE IF EXISTS expenses;",

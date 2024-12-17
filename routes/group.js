@@ -64,4 +64,18 @@ router.get("/:groupId/members", async (req, res) => {
     }
 });
 
+// router.post("/:groupId/settle", verifyToken, async (req, res) => {
+//     try {
+//         const user_id = req.userId;
+//         const { groupId } = req.params;
+//         const { settledTransactions } = req.body;
+
+//         if (!Array.isArray(settledTransactions)) {
+//             return res.status(400).json({ message: "Invalid input data" });
+//         }
+
+//         const result = await db_group.settleUp({ groupId, settledTransactions });
+//     }
+// })
+
 module.exports = router;

@@ -187,6 +187,8 @@ async function updateGroupTotal(postData) {
     }
 }
 
+async function settleUp(postData) {}
+
 module.exports = {
     getUserGroup,
     createGroup,
@@ -194,4 +196,5 @@ module.exports = {
     getGroupDetails,
     updateGroupTotal,
     getGroupMembersWithNames,
+    settleUp,
 };

@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const db_group = require("../database/groups");
 const db_expenses = require("../database/expenses");
-const { verifyToken } = require("../utils");
+const { verifyToken, settleBalances } = require("../utils");
 
 // Create a new expense
 router.post("/", verifyToken, async (req, res) => {
@@ -41,6 +41,14 @@ router.post("/", verifyToken, async (req, res) => {
         });
 
         await db_group.updateGroupTotal({ group_id, amount });
+
+        const balances = await db_expenses.getGroupBalancesWithId(group_id);
+
+        const transactions = settleBalances(balances);
+        await db_expenses.UpdateSettlement({
+            transactions,
+            group_id,
+        });
 
         res.status(201).send({ success: true, expense_id: result.expense_id });
     } catch (error) {

@@ -1,19 +1,5 @@
 const database = include("databaseConnection");
 
-async function testing() {
-    let testQuery = "SELECT * FROM testing";
-
-    let params = {};
-
-    try {
-        const results = await database.query(testQuery, params);
-        return results[0];
-    } catch (error) {
-        console.log(error);
-        return [];
-    }
-}
-
 async function isEmailInUse(postData) {
     let isEmailInUseQuery = "SELECT * FROM users WHERE email = :email";
 
@@ -98,7 +84,6 @@ async function getFriends(postData) {
 }
 
 module.exports = {
-    testing,
     createUser,
     isEmailInUse,
     getUserByEmail,
