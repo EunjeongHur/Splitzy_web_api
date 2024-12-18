@@ -9,18 +9,6 @@ async function getUserGroup(postData) {
 		FROM group_members gm
 		INNER JOIN user_groups ug ON gm.group_id = ug.id
 		WHERE gm.user_id = :user_id
-
-		UNION
-
-		SELECT DISTINCT 
-			ug.id AS id,
-			ug.name AS name,
-			ug.total AS total
-		FROM group_members gm
-		INNER JOIN user_groups ug ON gm.group_id = ug.id
-		INNER JOIN friends f ON 
-			(f.user_one_id = :user_id AND f.user_two_id = gm.user_id)
-			OR (f.user_two_id = :user_id AND f.user_one_id = gm.user_id);
 	`;
 
     let params = {
@@ -53,17 +41,30 @@ async function createGroup(postData) {
         );
         const groupId = groupResult.insertId;
 
-        const createGroupMembersQuery = `
+        const InsertUsertoGroupQuery = `
             INSERT INTO group_members (group_id, user_id)
-            VALUES ?
+            VALUES (?, ?)
         `;
 
-        const memberValues = postData.memberIds.map((userId) => [
+        await connection.query(InsertUsertoGroupQuery, [
             groupId,
-            userId,
+            postData.user_id,
         ]);
 
-        await connection.query(createGroupMembersQuery, [memberValues]);
+        console.log("Inside /groups", postData.user_id);
+
+        const CreateInvitationsQuery = `
+            INSERT INTO invitations (group_id, inviter_id, invitee_id)
+            VALUES (?, ?, ?)
+        `;
+
+        for (let user of postData.invitedUsers) {
+            await connection.query(CreateInvitationsQuery, [
+                groupId,
+                postData.user_id,
+                user,
+            ]);
+        }
 
         await connection.commit();
         console.log("Group created successfully with ID:", groupId);
@@ -98,7 +99,7 @@ async function getGroupMembers(postData) {
 
 async function getGroupMembersWithNames(postData) {
     let getGroupMembersQuery = `
-        SELECT u.id AS user_id, u.name AS user_name
+        SELECT u.id AS user_id, u.username AS user_name
         FROM group_members gm
         INNER JOIN users u ON gm.user_id = u.id
         WHERE gm.group_id = :group_id
@@ -126,6 +127,7 @@ async function getGroupDetails({ groupId }) {
             WHERE id = ?;
         `;
         const [groupResult] = await database.query(groupQuery, [groupId]);
+
         if (groupResult.length === 0) {
             return null; // Group not found
         }
@@ -138,7 +140,7 @@ async function getGroupDetails({ groupId }) {
                 e.description,
                 e.amount,
                 e.paid_by,
-                u.name AS paid_by_name,
+                u.username AS paid_by_name,
                 e.created_at
             FROM expenses e
             INNER JOIN users u ON e.paid_by = u.id

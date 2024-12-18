@@ -1,5 +1,21 @@
 const database = include("databaseConnection");
 
+async function isUsernameInUse(postData) {
+    let isUsernameInUseQuery = "SELECT * FROM users WHERE username = :username";
+
+    let params = {
+        username: postData.username,
+    };
+
+    try {
+        const results = await database.query(isUsernameInUseQuery, params);
+        return results[0].length > 0;
+    } catch (error) {
+        console.log(error);
+        return [];
+    }
+}
+
 async function isEmailInUse(postData) {
     let isEmailInUseQuery = "SELECT * FROM users WHERE email = :email";
 
@@ -18,12 +34,14 @@ async function isEmailInUse(postData) {
 
 async function createUser(postData) {
     let createUserQuery = `
-        INSERT INTO users (name, email, password_hash)
-        VALUES (:name, :email, :password)
+        INSERT INTO users (fname, lname, username, email, password_hash)
+        VALUES (:fname, :lname, :username, :email, :password)
     `;
 
     let params = {
-        name: postData.name,
+        fname: postData.fname,
+        lname: postData.lname,
+        username: postData.username,
         email: postData.email,
         password: postData.password,
     };
@@ -53,29 +71,21 @@ async function getUserByEmail(postData) {
     }
 }
 
-async function getFriends(postData) {
-    let getFriendsQuery = `
-        SELECT 
-            CASE
-                WHEN f.user_one_id = :userId THEN f.user_two_id
-                ELSE f.user_one_id
-            END AS friend_id,
-            u.name AS friend_name
-        FROM friends f
-        INNER JOIN users u
-            ON u.id = CASE
-                WHEN f.user_one_id = :userId THEN f.user_two_id
-                ELSE f.user_one_id
-            END
-        WHERE f.user_one_id = :userId OR f.user_two_id = :userId;
+async function searchUsers(postData) {
+    let searchUsersQuery = `
+        SELECT id, fname, lname, username, email
+        FROM users
+        WHERE id != :userId AND (fname LIKE :query OR lname LIKE :query OR username LIKE :query)
+        LIMIT 8;
     `;
 
     let params = {
         userId: postData.userId,
+        query: `%${postData.query}%`,
     };
 
     try {
-        const results = await database.query(getFriendsQuery, params);
+        const results = await database.query(searchUsersQuery, params);
         return results[0];
     } catch (error) {
         console.log(error);
@@ -85,7 +95,8 @@ async function getFriends(postData) {
 
 module.exports = {
     createUser,
+    isUsernameInUse,
     isEmailInUse,
     getUserByEmail,
-    getFriends,
+    searchUsers,
 };

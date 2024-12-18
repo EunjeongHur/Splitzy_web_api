@@ -5,7 +5,9 @@ async function createTables() {
         `
         CREATE TABLE IF NOT EXISTS users (
             id INT AUTO_INCREMENT PRIMARY KEY,
-            name VARCHAR(100) NOT NULL,
+            fname VARCHAR(100) NOT NULL,
+            lname VARCHAR(100) NOT NULL,
+            username VARCHAR(100) UNIQUE NOT NULL,
             email VARCHAR(100) UNIQUE NOT NULL,
             password_hash VARCHAR(100) NOT NULL,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -52,14 +54,16 @@ async function createTables() {
         );
     `,
         `
-        CREATE TABLE friends (
+        CREATE TABLE invitations (
             id INT AUTO_INCREMENT PRIMARY KEY,
-            user_one_id INT NOT NULL,
-            user_two_id INT NOT NULL,
+            group_id INT NOT NULL,
+            inviter_id INT NOT NULL,
+            invitee_id INT NOT NULL,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (user_one_id) REFERENCES users(id) ON DELETE CASCADE,
-            FOREIGN KEY (user_two_id) REFERENCES users(id) ON DELETE CASCADE,
-            CONSTRAINT unique_friendship UNIQUE (user_one_id, user_two_id)
+            FOREIGN KEY (group_id) REFERENCES user_groups(id) ON DELETE CASCADE,
+            FOREIGN KEY (inviter_id) REFERENCES users(id) ON DELETE CASCADE,
+            FOREIGN KEY (invitee_id) REFERENCES users(id) ON DELETE CASCADE,
+            UNIQUE (group_id, invitee_id) -- Ensures no duplicate invitations for the same group and user
         );
     `,
         `
@@ -96,7 +100,7 @@ async function createTables() {
 async function deleteTables() {
     const deleteTableQueries = [
         "DROP TABLE IF EXISTS settlements;",
-        "DROP TABLE IF EXISTS friends;",
+        "DROP TABLE IF EXISTS invitations;",
         "DROP TABLE IF EXISTS expense_shares;",
         "DROP TABLE IF EXISTS expenses;",
         "DROP TABLE IF EXISTS group_members;",

@@ -55,6 +55,7 @@ function verifyToken(req, res, next) {
             return res.status(403).json({ message: "Unauthorized." });
         }
         req.userId = decoded.userId;
+        console.log("Inside verifyToken");
         next();
     });
 }

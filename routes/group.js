@@ -8,9 +8,8 @@ router.get("/", verifyToken, async (req, res) => {
     try {
         const user_id = req.userId;
 
-        console.log(user_id);
         const result = await db_group.getUserGroup({ user_id });
-        console.log(result);
+
         res.status(200).send(result);
     } catch (error) {
         console.log(error);
@@ -19,12 +18,16 @@ router.get("/", verifyToken, async (req, res) => {
 });
 
 // Create a new group
-router.post("/", async (req, res) => {
-    const groupName = req.body.groupName;
-    const memberIds = req.body.memberIds;
+router.post("/", verifyToken, async (req, res) => {
+    const { groupName, invitedUsers } = req.body;
+    const user_id = req.userId;
 
     try {
-        const result = await db_group.createGroup({ groupName, memberIds });
+        const result = await db_group.createGroup({
+            groupName,
+            invitedUsers,
+            user_id,
+        });
         res.status(200).send(result);
     } catch (error) {
         console.log(error);
@@ -35,11 +38,12 @@ router.post("/", async (req, res) => {
 // Get group details for a specific group
 router.get("/:groupId", async (req, res) => {
     const { groupId } = req.params;
-
+    console.log(groupId);
     try {
         // Fetch group details and expenses
         const groupDetails = await db_group.getGroupDetails({ groupId });
 
+        console.log(groupDetails);
         if (!groupDetails) {
             return res.status(404).send({ error: "Group not found" });
         }

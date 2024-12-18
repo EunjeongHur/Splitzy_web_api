@@ -51,7 +51,7 @@ async function addExpense({
 async function getGroupBalances(groupId) {
     let getGroupBalancesQuery = `
         SELECT 
-            u.name AS user,
+            u.username AS user,
             IFNULL(paid.total_paid, 0) - IFNULL(share.total_share, 0) AS balance
         FROM users u
         LEFT JOIN (
@@ -164,9 +164,50 @@ async function UpdateSettlement(postData) {
     }
 }
 
+async function updateExpenseShares(groupId) {
+    // Fetch group members
+    const members = await database.query(
+        `SELECT user_id FROM group_members WHERE group_id = ?`,
+        [groupId]
+    );
+
+    const memberCount = members[0].length;
+
+    // Fetch all expenses for the group
+    const expenses = await database.query(
+        `SELECT id, amount FROM expenses WHERE group_id = ?`,
+        [groupId]
+    );
+
+    for (const expense of expenses[0]) {
+        const splitAmount = parseFloat(
+            (expense.amount / memberCount).toFixed(2)
+        );
+
+        // Delete old shares
+        await database.query(
+            `DELETE FROM expense_shares WHERE expense_id = ?`,
+            [expense.id]
+        );
+
+        // Insert new shares
+        const shareValues = members[0].map((member) => [
+            expense.id,
+            member.user_id,
+            splitAmount,
+        ]);
+
+        await database.query(
+            `INSERT INTO expense_shares (expense_id, user_id, amount) VALUES ?`,
+            [shareValues]
+        );
+    }
+}
+
 module.exports = {
     addExpense,
     getGroupBalances,
     UpdateSettlement,
     getGroupBalancesWithId,
+    updateExpenseShares,
 };

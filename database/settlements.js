@@ -5,8 +5,8 @@ async function getGroupSettlements(groupId) {
         SELECT 
             s.id,
             s.group_id,
-            u_from.name AS from_user_name,
-            u_to.name AS to_user_name,
+            u_from.username AS from_user_name,
+            u_to.username AS to_user_name,
             s.amount,
             s.is_settled,
             s.created_at

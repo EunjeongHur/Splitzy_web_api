@@ -15,11 +15,14 @@ const node_session_secret = process.env.NODE_SESSION_SECRET;
 
 const databaseTablesModule = require("./database/create_tables");
 
+const { verifyToken } = require("./utils");
+
 const authRouter = require("./routes/auth");
 const groupRouter = require("./routes/group");
-const friendsRouter = require("./routes/friends");
 const expensesRouter = require("./routes/expenses");
 const settleUpRouter = require("./routes/settleUp");
+const usersRouter = require("./routes/users");
+const invitationRouter = require("./routes/invitations");
 
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
@@ -56,9 +59,10 @@ app.get("/deleteTable", (req, res) => {
 
 app.use("/auth", authRouter);
 app.use("/groups", groupRouter);
-app.use("/friends", friendsRouter);
 app.use("/expenses", expensesRouter);
 app.use("/settle", settleUpRouter);
+app.use("/users", verifyToken, usersRouter);
+app.use("/invitations", verifyToken, invitationRouter);
 
 app.listen(port, () => {
     console.log(`Server is running on http://localhost:${port}`);
