@@ -41,4 +41,20 @@ async function settleUp(settlementId) {
     }
 }
 
-module.exports = { getGroupSettlements, settleUp };
+async function undoSettle(settlementId) {
+    const query = `
+        UPDATE settlements
+        SET is_settled = FALSE
+        WHERE id = ?
+    `;
+
+    try {
+        await database.query(query, [settlementId]);
+        return true;
+    } catch (error) {
+        console.error("Error undoing settle up:", error);
+        throw error;
+    }
+}
+
+module.exports = { getGroupSettlements, settleUp, undoSettle };
