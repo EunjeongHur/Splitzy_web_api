@@ -68,6 +68,20 @@ router.get("/:groupId/members", async (req, res) => {
     }
 });
 
+router.delete("/:groupId/delete", verifyToken, async (req, res) => {
+    const { groupId } = req.params;
+    const user_id = req.userId;
+
+    console.log(groupId, user_id);
+    try {
+        const result = await db_group.deleteGroup({ groupId, user_id });
+        res.status(200).send(result);
+    } catch (error) {
+        console.log(error);
+        res.status(500).send("Internal Server Error");
+    }
+});
+
 // router.post("/:groupId/settle", verifyToken, async (req, res) => {
 //     try {
 //         const user_id = req.userId;
