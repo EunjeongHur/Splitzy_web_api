@@ -27,7 +27,7 @@ The backend is built using **Node.js** and **Express.js** with **MySQL** as the 
 ## 📂 Directory Structure
 
 ```
-SPLIZY_WEB_API/
+SPLITZY_WEB_API/
 ├── database/
 │ ├── create_tables.js # Database schema creation
 │ ├── expenses.js # Database queries for expenses
