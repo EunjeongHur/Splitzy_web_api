@@ -1,6 +1,6 @@
 # 📌 Splitzy_web_api
 
-This repository contains the backend API for **Splitzy**, a mobile application designed for splitting group expenses. The backend provides a secure and scalable RESTful API to handle user authentication, group management, expense tracking, and settlements.
+This repository contains the backend API for **Splitzy**, a mobile application designed for splitting group expenses.<br><br>The backend provides a secure and scalable RESTful API to handle user authentication, group management, expense tracking, and settlements.
 
 ---
 
