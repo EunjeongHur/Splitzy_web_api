@@ -1,7 +1,7 @@
 const database = include("databaseConnection");
 
 async function getGroupSettlements(groupId) {
-    const query = `
+	const query = `
         SELECT 
             s.id,
             s.group_id,
@@ -16,45 +16,45 @@ async function getGroupSettlements(groupId) {
         WHERE s.group_id = ?
     `;
 
-    try {
-        const [rows] = await database.query(query, [groupId]);
-        return rows;
-    } catch (error) {
-        console.error("Error fetching settlements:", error);
-        throw error;
-    }
+	try {
+		const [rows] = await database.query(query, [groupId]);
+		return rows;
+	} catch (error) {
+		console.error("Error fetching settlements");
+		throw error;
+	}
 }
 
 async function settleUp(settlementId) {
-    const query = `
+	const query = `
         UPDATE settlements
         SET is_settled = TRUE
         WHERE id = ?
     `;
 
-    try {
-        await database.query(query, [settlementId]);
-        return true;
-    } catch (error) {
-        console.error("Error settling up:", error);
-        throw error;
-    }
+	try {
+		await database.query(query, [settlementId]);
+		return true;
+	} catch (error) {
+		console.error("Error settling up");
+		throw error;
+	}
 }
 
 async function undoSettle(settlementId) {
-    const query = `
+	const query = `
         UPDATE settlements
         SET is_settled = FALSE
         WHERE id = ?
     `;
 
-    try {
-        await database.query(query, [settlementId]);
-        return true;
-    } catch (error) {
-        console.error("Error undoing settle up:", error);
-        throw error;
-    }
+	try {
+		await database.query(query, [settlementId]);
+		return true;
+	} catch (error) {
+		console.error("Error undoing settle up");
+		throw error;
+	}
 }
 
 module.exports = { getGroupSettlements, settleUp, undoSettle };
