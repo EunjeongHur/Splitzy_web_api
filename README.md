@@ -1,4 +1,4 @@
-# 📌 SPLIZY_WEB_API
+# 📌 Splitzy_web_api
 
 This repository contains the backend API for **Splitzy**, a mobile application designed for splitting group expenses. The backend provides a secure and scalable RESTful API to handle user authentication, group management, expense tracking, and settlements.
 
@@ -26,6 +26,7 @@ The backend is built using **Node.js** and **Express.js** with **MySQL** as the 
 
 ## 📂 Directory Structure
 
+```
 SPLIZY_WEB_API/
 ├── database/
 │ ├── create_tables.js # Database schema creation
@@ -44,11 +45,13 @@ SPLIZY_WEB_API/
 ├── node_modules/ # Project dependencies
 ├── .env # Environment variables
 ├── .gitignore # Files and folders to ignore in Git
-├── databaseConnection.js # Database connection configuration ├── index.js # Entry point for the backend server
+├── databaseConnection.js # Database connection configuration
+├── index.js # Entry point for the backend server
 ├── package.json # Project metadata and dependencies
 ├── package-lock.json # Locked dependency versions
 ├── README.md # Project documentation
 └── utils.js # Utility functions
+```
 
 ---
 
